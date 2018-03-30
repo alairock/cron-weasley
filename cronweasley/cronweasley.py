@@ -16,16 +16,22 @@ Crontime = namedtuple('Crontime',
                       'minute, hour, day_of_month, month, day_of_week')
 
 
-def check_time(tab: HourCron) -> bool:
+def _check_digit(digit, crontime):
+    if digit is '*':
+        return True
+    if digit == crontime:
+        return True
+    return False
+
+
+def _check_time(tab: HourCron) -> bool:
     now = datetime.now()
     crontime = Crontime(now.minute, now.hour, now.day, now.month, now.weekday())
-    minute_of_hour = tab.minute is '*' or int(tab.minute) == crontime.minute
-    hour_of_day = tab.hour is '*' or int(tab.hour) == crontime.hour
-    day_of_month = tab.day_of_month is '*' \
-                   or int(tab.day_of_month) == crontime.day_of_month
-    month = tab.month is '*' or int(tab.month) == crontime.month
-    day_of_week = tab.day_of_week is '*' \
-                  or int(tab.day_of_week) == crontime.day_of_week
+    minute_of_hour = _check_digit(tab.minute, crontime.minute)
+    hour_of_day = _check_digit(tab.hour, crontime.hour)
+    day_of_month = _check_digit(tab.day_of_month, crontime.day_of_month)
+    month = _check_digit(tab.month, crontime.month)
+    day_of_week = _check_digit(tab.day_of_week, crontime.day_of_week)
     return all([minute_of_hour, hour_of_day, day_of_month, month, day_of_week])
 
 
@@ -33,20 +39,17 @@ decorated = {}
 
 
 def run_at(time):
-    ready = check_time(HourCron(*time.split(' ')))
-
     def wrap(fn):
         global decorated
-
-        if ready:
-            if fn.__module__ not in decorated:
-                decorated.update({fn.__module__: []})
-            decorated[fn.__module__].append(fn.__name__)
+        if fn.__module__ not in decorated:
+            decorated.update({fn.__module__: []})
+        decorated[fn.__module__].append(fn.__name__)
 
         @wraps(fn)
         async def wrapper(*args, **kwargs):
-            print('starting job', fn.__name__)
-            return await fn(*args, **kwargs)
+            if _check_time(HourCron(*time.split(' '))):
+                print('starting job', fn.__name__)
+                return await fn(*args, **kwargs)
 
         return wrapper
 
@@ -89,18 +92,22 @@ async def run_jobs(*_, **kwargs):
 async def _run_jobs_continuously(*args, **kwargs):
     interval = kwargs.get('interval')
     if interval is None:
-        interval = 60
+        interval = 1
     else:
         del kwargs['loop']
     await run_jobs(*args, **kwargs)
     await asyncio.sleep(int(interval) * 60)
+    await _run_jobs_continuously(*args, **kwargs)
 
 
 def run(*args, **kwargs):
-    loop = kwargs.get('loop')
-    if loop is None:
-        loop = asyncio.get_event_loop()
-    else:
-        del kwargs['loop']
+    try:
+        loop = kwargs.get('loop')
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        else:
+            del kwargs['loop']
 
-    loop.run_until_complete(_run_jobs_continuously(*args, **kwargs))
+        loop.run_until_complete(_run_jobs_continuously(*args, **kwargs))
+    except KeyboardInterrupt:
+        pass
