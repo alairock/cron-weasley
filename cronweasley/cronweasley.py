@@ -47,7 +47,9 @@ def run_at(time):
         async def wrapper(*args, **kwargs):
             print('starting job', fn.__name__)
             return await fn(*args, **kwargs)
+
         return wrapper
+
     return wrap
 
 
@@ -67,7 +69,8 @@ async def run_jobs(*_, **kwargs):
         _jobs = []
         for to_load in job_modules:
             module = to_load[0].find_module(to_load[1]).load_module()
-            jobs = [getattr(module, d)(**kwargs) for d in decorated.get(to_load[1], [])]
+            jobs = [getattr(module, d)(**kwargs) for d in
+                    decorated.get(to_load[1], [])]
             if jobs:
                 [_jobs.append(job) for job in jobs]
         return await asyncio.gather(*_jobs)
@@ -76,11 +79,28 @@ async def run_jobs(*_, **kwargs):
         _jobs = []
         for file in files:
             module = import_module(file)
-            jobs = [getattr(module, d)(**kwargs) for d in decorated.get(file, [])]
+            jobs = [getattr(module, d)(**kwargs) for d in
+                    decorated.get(file, [])]
             if jobs:
                 [_jobs.append(job) for job in jobs]
         return await asyncio.gather(*_jobs)
 
 
-async def check_for_jobs():
-    pass
+async def _run_jobs_continuously(*args, **kwargs):
+    interval = kwargs.get('interval')
+    if interval is None:
+        interval = 60
+    else:
+        del kwargs['loop']
+    await run_jobs(args, kwargs)
+    await asyncio.sleep(int(interval) * 60)
+
+
+def run_jobs_continuously(*args, **kwargs):
+    loop = kwargs.get('loop')
+    if loop is None:
+        loop = asyncio.get_event_loop()
+    else:
+        del kwargs['loop']
+
+    loop.run_until_complete(_run_jobs_continuously(args, kwargs))

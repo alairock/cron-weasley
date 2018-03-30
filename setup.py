@@ -14,4 +14,4 @@ setuptools.setup(name='cron-weasley',
                  license='MIT License',
                  zip_safe=False,
                  keywords='cron crontab cronjob',
-                 classifiers=['Cronjob', 'Crontab'])
+                 classifiers=['Development Status :: 4 - Beta'])
