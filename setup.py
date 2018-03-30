@@ -3,7 +3,7 @@ from cronweasley.version import Version
 
 
 setuptools.setup(name='cron-weasley',
-                 version=Version('1.0.1').number,
+                 version=Version('1.0.2').number,
                  description='Cronjobs for Wizards',
                  long_description=open('README.md').read().strip(),
                  author='alairock',
