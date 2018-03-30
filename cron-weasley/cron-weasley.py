@@ -5,7 +5,7 @@ from datetime import datetime
 from functools import wraps
 import pkgutil
 import sys
-from importlib import import_module, reload
+from importlib import import_module
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger()

@@ -1,9 +1,9 @@
 import setuptools
-from cronweasley.version import Version
 
+__version__ = '1.0.12'
 
 setuptools.setup(name='cron-weasley',
-                 version=Version('1.0.3').number,
+                 version=__version__,
                  description='Cronjobs for Wizards',
                  long_description=open('README.md').read().strip(),
                  author='alairock',
