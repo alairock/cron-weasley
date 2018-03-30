@@ -1,5 +1,5 @@
 import setuptools
-from packagename.version import Version
+from cronweasley.version import Version
 
 
 setuptools.setup(name='cron-weasley',
