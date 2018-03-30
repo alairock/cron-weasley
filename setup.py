@@ -1,6 +1,6 @@
 import setuptools
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 setuptools.setup(name='cronweasley',
                  version=__version__,
