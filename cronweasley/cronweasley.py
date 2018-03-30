@@ -92,7 +92,7 @@ async def _run_jobs_continuously(*args, **kwargs):
         interval = 60
     else:
         del kwargs['loop']
-    await run_jobs(args, kwargs)
+    await run_jobs(*args, **kwargs)
     await asyncio.sleep(int(interval) * 60)
 
 
@@ -103,4 +103,4 @@ def run(*args, **kwargs):
     else:
         del kwargs['loop']
 
-    loop.run_until_complete(_run_jobs_continuously(args, kwargs))
+    loop.run_until_complete(_run_jobs_continuously(*args, **kwargs))

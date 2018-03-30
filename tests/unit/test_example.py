@@ -1,6 +1,6 @@
 import asyncio
 
-from cronweasley.cronweasley import run_jobs
+from cronweasley.cronweasley import run_jobs, run as cron_run
 from tests import *
 
 
@@ -29,4 +29,3 @@ class TestExample(unittest.TestCase):
                 ])
             assert r == ['job c']
         loop.run_until_complete(run())
-
