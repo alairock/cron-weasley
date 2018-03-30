@@ -96,7 +96,7 @@ async def _run_jobs_continuously(*args, **kwargs):
     await asyncio.sleep(int(interval) * 60)
 
 
-def run_jobs_continuously(*args, **kwargs):
+def run(*args, **kwargs):
     loop = kwargs.get('loop')
     if loop is None:
         loop = asyncio.get_event_loop()

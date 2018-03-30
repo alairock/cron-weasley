@@ -43,8 +43,8 @@ loop.run_until_complete(run())
 Also built in is a function that will run your jobs forever, checking every 60 seconds for the next job.
 
 ```
-from cronweasley.cronweasley import run_jobs_continuously
-run_jobs_continuously(files=[
+from cronweasley.cronweasley import run
+run(files=[
   'tests.test_jobs.test1',
   'tests.test_jobs.test2',
   'tests.test_jobs.test3'
@@ -53,15 +53,15 @@ run_jobs_continuously(files=[
 
 Also supports passing a path, like `run_jobs()`
 ```
-from cronweasley.cronweasley import run_jobs_continuously
-run_jobs_continuously(path='jobs')
+from cronweasley.cronweasley import run
+run(path='jobs')
 ```
 
-The function `run_jobs_continuously()` will automatically start a loop for you, but you can also pass in your own loop, as well as your own interval in minutes
+The function `run()` will automatically start a loop for you, but you can also pass in your own loop, as well as your own interval in minutes
 
 ```
-from cronweasley.cronweasley import run_jobs_continuously
-run_jobs_continuously(path='jobs', loop=loop, interval=1)
+from cronweasley.cronweasley import run
+run(path='jobs', loop=loop, interval=1)
 ```
 
 
