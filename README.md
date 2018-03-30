@@ -4,6 +4,13 @@ Cronjobs for Wizards
 ## What's up with the name?
 It was either that or Cron Swanson
 
+## Installation
+This is on PyPi, so you can just
+
+```sh
+pip install cron-weasley
+```
+
 ## Usage
 
 ### Run jobs once
