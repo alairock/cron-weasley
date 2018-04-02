@@ -59,7 +59,7 @@ class Cron:
     def __init__(self, *args, **kwargs):
         self.kwargs = kwargs
         self.args = args
-        self.interval_multiplier = 3
+        self.interval_multiplier = 60
         self._jobs = []
 
     def run(self, files=None, path=None, loop=None, interval=1):
