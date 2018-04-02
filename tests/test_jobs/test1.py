@@ -9,3 +9,8 @@ async def a_job():
 @run_at('* * * * *')
 async def b_job():
     return 'job b'
+
+
+@run_at('56 * * * *')
+async def g_job():
+    return 'job g'
