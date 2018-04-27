@@ -2,6 +2,7 @@
 .python-version
 .venv
 .pytest_cache
+test.py
 
 # C extensions
 *.so

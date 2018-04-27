@@ -2,6 +2,7 @@ import asyncio
 import logging
 from collections import namedtuple
 from datetime import datetime
+import time
 from functools import wraps
 import pkgutil
 import sys
@@ -36,10 +37,43 @@ def run_at(time):
     return wrap
 
 
-def _check_digit(digit, crontime):
+def _check_digit(digit, crontime, max_divisions):
     if digit is '*':
         return True
-    if str(digit) == str(crontime):
+    elif '/' in digit:
+        arguments = str(digit).split('/')
+        if len(arguments) >= 3:
+            raise ValueError('Divisors may only have a '
+                             'starting digit and an interval.')
+        digit = int(arguments[0])
+        if arguments[0] == '*':
+            digit = 0
+        divisor = int(arguments[1])
+        good_times = [digit]
+        prev_high_no = digit
+        for _ in range(int((max_divisions-digit)/divisor)):
+            prev_high_no = prev_high_no + divisor
+            good_times.append(prev_high_no)
+        if crontime in good_times:
+            return True
+        return False
+    elif ',' in digit:
+        good_times = digit.split(',')
+        if crontime in good_times:
+            return True
+        return False
+    elif '-' in digit:
+        arguments = str(digit).split('-')
+        if len(arguments) >= 3:
+            raise ValueError('Range requires only a starting'
+                             ' and ending digit.')
+        good_times = []
+        for num in range(int(arguments[0]), int(arguments[1]) + 1):
+            good_times.append(num)
+        if crontime in good_times:
+            return True
+        return False
+    elif str(digit) == str(crontime):
         return True
     return False
 
@@ -47,11 +81,11 @@ def _check_digit(digit, crontime):
 def _check_time(tab: HourCron) -> bool:
     now = datetime.now()
     crontime = Crontime(now.minute, now.hour, now.day, now.month, now.weekday())
-    minute_of_hour = _check_digit(tab.minute, crontime.minute)
-    hour_of_day = _check_digit(tab.hour, crontime.hour)
-    day_of_month = _check_digit(tab.day_of_month, crontime.day_of_month)
-    month = _check_digit(tab.month, crontime.month)
-    day_of_week = _check_digit(tab.day_of_week, crontime.day_of_week)
+    minute_of_hour = _check_digit(tab.minute, crontime.minute, 60)
+    hour_of_day = _check_digit(tab.hour, crontime.hour, 24)  # midnight at 0 AND 24
+    day_of_month = _check_digit(tab.day_of_month, crontime.day_of_month, 31)
+    month = _check_digit(tab.month, crontime.month, 12)
+    day_of_week = _check_digit(tab.day_of_week, crontime.day_of_week, 7)  # sunday is 0 AND 7
     return all([minute_of_hour, hour_of_day, day_of_month, month, day_of_week])
 
 
@@ -62,12 +96,12 @@ class Cron:
         self.interval_multiplier = 60
         self._jobs = []
 
-    def run(self, files=None, path=None, loop=None, interval=1):
+    def run(self, files=None, path=None, loop=None):
         try:
             if loop is None:
                 loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._run_jobs_continuously(
-                files, path, interval))
+            loop.create_task(self._run_jobs_continuously(files, path))
+            loop.run_forever()
         except KeyboardInterrupt:
             pass
 
@@ -96,9 +130,8 @@ class Cron:
                 await self._get_modules_to_run(module, file)
             return await asyncio.gather(*self._jobs)
 
-    async def _run_jobs_continuously(self, files, path, interval):
-        await self.run_jobs(files, path)
-        await asyncio.sleep(int(interval) * self.interval_multiplier)
-        await self._run_jobs_continuously(files, path, interval)
-
+    async def _run_jobs_continuously(self, files, path):
+        await asyncio.sleep(60 - (time.time() % 60))
+        asyncio.ensure_future(self.run_jobs(files, path))
+        asyncio.ensure_future(self._run_jobs_continuously(files, path))
 
