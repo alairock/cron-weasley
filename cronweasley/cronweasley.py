@@ -45,9 +45,10 @@ def _check_digit(digit, crontime, max_divisions):
         if len(arguments) >= 3:
             raise ValueError('Divisors may only have a '
                              'starting digit and an interval.')
-        digit = int(arguments[0])
+        digit = arguments[0]
         if arguments[0] == '*':
             digit = 0
+        digit = int(digit)
         divisor = int(arguments[1])
         good_times = [digit]
         prev_high_no = digit

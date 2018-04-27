@@ -14,3 +14,8 @@ async def comma_job():
 @run_at('18-23 * * * *')
 async def dash_job():
     return 'job dash'
+
+
+@run_at('11 */1 * * *')
+async def fraction2_job():
+    return 'job fraction2'
