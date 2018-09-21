@@ -8,6 +8,8 @@ import pkgutil
 from importlib import import_module
 from timeit import default_timer as timer
 import os
+import inspect
+
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
@@ -34,7 +36,28 @@ def run_at(crontime):
             if _check_time(HourCron(*crontime.split(' '))):
                 logger.info(' '.join(['starting job', f'{fn.__name__}']))
                 start = timer()
-                _fn = await fn(*args, **kwargs)
+
+                def dead_func():
+                    pass
+                on_error = dead_func
+                after_job = dead_func
+                if 'on_error' in kwargs and callable(kwargs['on_error']):
+                    on_error = kwargs['on_error']
+                    del kwargs['on_error']
+                if 'after_job' in kwargs and callable(kwargs['after_job']):
+                    after_job = kwargs['after_job']
+                    del kwargs['after_job']
+                try:
+                    if 'before_job' in kwargs and callable(kwargs['before_job']):
+                        await kwargs['before_job']()
+                        del kwargs['before_job']
+
+                    _fn = await _sanitize_args(fn, *args, **kwargs)
+                    await after_job()
+                except Exception as e:
+                    await on_error(e)
+                    raise e
+
                 end = timer()
                 to_print = ['finishing job', f'{fn.__name__}', '- elapsed:', f'{end - start}']
                 if type(_fn) is int:
@@ -46,6 +69,26 @@ def run_at(crontime):
         return wrapper
 
     return wrap
+
+
+async def _sanitize_args(fn, *args, **kwargs):
+    signature = inspect.signature(fn)
+    introspected_kwargs = {}
+    if not len(list(signature.parameters)):
+        return await fn()
+    has_args = False
+    for key in signature.parameters:
+        if signature.parameters[key].kind.name == 'KEYWORD_ONLY':
+            introspected_kwargs.update({key: kwargs[key]})
+            del kwargs[key]
+        elif signature.parameters[key].kind.name == 'VAR_KEYWORD':
+            introspected_kwargs.update(kwargs)
+        else:
+            has_args = True
+    introspected_args = {'attributes': kwargs}
+    if not has_args:
+        return await fn(*(), **introspected_kwargs)
+    return await fn(introspected_args, **introspected_kwargs)
 
 
 def _check_digit(digit, crontime, max_divisions):
@@ -118,6 +161,8 @@ class Cron:
             pass
 
     async def _get_modules_to_run(self, module, file):
+        if self.args:
+            raise ValueError('Non-keyword arguments are not allowed')
         jobs = [getattr(module, d)(**self.kwargs) for d in decorated.get(file, [])]
         if jobs:
             self._jobs.extend(jobs)
