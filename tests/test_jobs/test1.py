@@ -8,7 +8,7 @@ async def a_job():
 
 @run_at('* * * * *')
 async def b_job():
-    return 'job b'
+    return 33
 
 
 async def do_stuff():

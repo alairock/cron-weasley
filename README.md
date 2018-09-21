@@ -88,3 +88,20 @@ async def a_job():
     print('job "a" complete')
     return 'job "a"'
 ```
+
+### Logging
+Logging is built in to default print out the job at job start:
+
+```
+starting job <job name>
+```
+
+and when done
+```
+finishing job <job name> - elapsed: <time elapsed> - count: <int>
+```
+
+Count won't show up unless you return an integer from your job. This
+is not changeable at this time. Merge requests welcome.
+
+Disable verbose by setting the environment variable `LOGLEVEL=WARNING`

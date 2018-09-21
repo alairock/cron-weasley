@@ -5,10 +5,13 @@ from datetime import datetime
 import time
 from functools import wraps
 import pkgutil
-import sys
 from importlib import import_module
+from timeit import default_timer as timer
+import os
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
+logging.basicConfig(level=LOGLEVEL)
 logger = logging.getLogger()
 
 HourCron = namedtuple('HourCron',
@@ -19,7 +22,7 @@ Crontime = namedtuple('Crontime',
 decorated = {}
 
 
-def run_at(time):
+def run_at(crontime):
     def wrap(fn):
         global decorated
         if fn.__module__ not in decorated:
@@ -28,9 +31,17 @@ def run_at(time):
 
         @wraps(fn)
         async def wrapper(*args, **kwargs):
-            if _check_time(HourCron(*time.split(' '))):
-                print('starting job', fn.__name__)
-                return await fn(*args, **kwargs)
+            if _check_time(HourCron(*crontime.split(' '))):
+                logger.info(' '.join(['starting job', f'{fn.__name__}']))
+                start = timer()
+                _fn = await fn(*args, **kwargs)
+                end = timer()
+                to_print = ['finishing job', f'{fn.__name__}', '- elapsed:', f'{end - start}']
+                if type(_fn) is int:
+                    to_print = to_print + ['- count:', f'{_fn}']
+                logger.info(' '.join(to_print))
+
+                return _fn
 
         return wrapper
 
