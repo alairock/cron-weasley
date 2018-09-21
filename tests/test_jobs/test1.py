@@ -9,3 +9,7 @@ async def a_job():
 @run_at('* * * * *')
 async def b_job():
     return 'job b'
+
+
+async def do_stuff():
+    return True

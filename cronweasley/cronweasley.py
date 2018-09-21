@@ -97,11 +97,11 @@ class Cron:
         self.interval_multiplier = 60
         self._jobs = []
 
-    def run(self, files=None, path=None, loop=None):
+    def run(self, files=None, path=None, loop=None, boottime=False):
         try:
             if loop is None:
                 loop = asyncio.get_event_loop()
-            loop.create_task(self._run_jobs_continuously(files, path))
+            loop.create_task(self._run_jobs_continuously(files, path, boottime))
             loop.run_forever()
         except KeyboardInterrupt:
             pass
@@ -109,8 +109,7 @@ class Cron:
     async def _get_modules_to_run(self, module, file):
         jobs = [getattr(module, d)(**self.kwargs) for d in decorated.get(file, [])]
         if jobs:
-            for job in jobs:
-                self._jobs.append(job)
+            self._jobs.extend(jobs)
 
     async def run_jobs(self, files, path):
         self._jobs = []
@@ -131,8 +130,9 @@ class Cron:
                 await self._get_modules_to_run(module, file)
             return await asyncio.gather(*self._jobs)
 
-    async def _run_jobs_continuously(self, files, path):
-        await asyncio.sleep(60 - (time.time() % 60))
+    async def _run_jobs_continuously(self, files, path, boottime=False):
+        if not boottime:
+            await asyncio.sleep(60 - (time.time() % 60))
         asyncio.ensure_future(self.run_jobs(files, path))
         asyncio.ensure_future(self._run_jobs_continuously(files, path))
 
