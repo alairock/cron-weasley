@@ -2,7 +2,7 @@ from cronweasley.cronweasley import run_at
 
 
 @run_at('* * * * *')
-async def a_job(attributes, **kwargs):
+async def a_job(pool=None, **kwargs):
     return 'job a'
 
 

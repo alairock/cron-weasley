@@ -2,9 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='cronweasley',
-    version='1.3.1',
+    version='1.4.4',
     description='Cronjobs for Wizards',
-    long_description_content_type='text/markdown',
     url='http://github.com/alairock/cron-weasley',
     author='alairock',
     author_email='sblnog@gmail.com',

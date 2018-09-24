@@ -37,7 +37,7 @@ def run_at(crontime):
                 logger.info(' '.join(['starting job', f'{fn.__name__}']))
                 start = timer()
 
-                def dead_func():
+                async def dead_func(error=None):
                     pass
                 on_error = dead_func
                 after_job = dead_func
@@ -78,16 +78,20 @@ async def _sanitize_args(fn, *args, **kwargs):
         return await fn()
     has_args = False
     for key in signature.parameters:
-        if signature.parameters[key].kind.name == 'KEYWORD_ONLY':
-            introspected_kwargs.update({key: kwargs[key]})
-            del kwargs[key]
+        if signature.parameters[key].kind.name in ['POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY']:
+            if kwargs.get(key, False):
+                introspected_kwargs.update({key: kwargs.get(key)})
+                del kwargs[key]
         elif signature.parameters[key].kind.name == 'VAR_KEYWORD':
             introspected_kwargs.update(kwargs)
         else:
             has_args = True
     introspected_args = {'attributes': kwargs}
     if not has_args:
-        return await fn(*(), **introspected_kwargs)
+        try:
+            return await fn(*(), **introspected_kwargs)
+        except TypeError as e:
+            raise Exception('Illegal or unregistered argument.') from e
     return await fn(introspected_args, **introspected_kwargs)
 
 
