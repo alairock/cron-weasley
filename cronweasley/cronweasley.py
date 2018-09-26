@@ -55,7 +55,8 @@ def run_at(crontime):
                     _fn = await _sanitize_args(fn, *args, **kwargs)
                     await after_job()
                 except Exception as e:
-                    await on_error(e)
+                    end = timer()
+                    await on_error(e, fn.__name__, end-start)
                     raise e
 
                 end = timer()
