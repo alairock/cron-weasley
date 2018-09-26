@@ -41,6 +41,7 @@ def run_at(crontime):
                     pass
                 on_error = dead_func
                 after_job = dead_func
+                _fn = None
                 if 'on_error' in kwargs and callable(kwargs['on_error']):
                     on_error = kwargs['on_error']
                     del kwargs['on_error']
@@ -57,8 +58,6 @@ def run_at(crontime):
                 except Exception as e:
                     end = timer()
                     await on_error(e, fn.__name__, end-start)
-                    raise e
-
                 end = timer()
                 to_print = ['finishing job', f'{fn.__name__}', '- elapsed:', f'{end - start}']
                 if type(_fn) is int:
