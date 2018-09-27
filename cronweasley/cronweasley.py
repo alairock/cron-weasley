@@ -40,7 +40,9 @@ def run_at(crontime):
                 async def dead_func(error=None):
                     pass
                 on_error = dead_func
-                after_job = dead_func
+
+                async def after_job(name, count, ellapsed):
+                    return None
                 _fn = None
                 if 'on_error' in kwargs and callable(kwargs['on_error']):
                     on_error = kwargs['on_error']
@@ -52,14 +54,13 @@ def run_at(crontime):
                     if 'before_job' in kwargs and callable(kwargs['before_job']):
                         await kwargs['before_job']()
                         del kwargs['before_job']
-
                     _fn = await _sanitize_args(fn, *args, **kwargs)
-                    await after_job()
                 except Exception as e:
                     end = timer()
                     await on_error(e, fn.__name__, end-start)
                     return
                 end = timer()
+                await after_job(fn.__name__, None if type(_fn) is not int else _fn, end-start)
                 to_print = ['finishing job', f'{fn.__name__}', '- elapsed:', f'{end - start}']
                 if type(_fn) is int:
                     to_print = to_print + ['- count:', f'{_fn}']
