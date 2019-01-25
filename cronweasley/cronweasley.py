@@ -52,7 +52,7 @@ def run_at(crontime):
                     del kwargs['after_job']
                 try:
                     if 'before_job' in kwargs and callable(kwargs['before_job']):
-                        await kwargs['before_job']()
+                        await kwargs['before_job'](*args, **kwargs)
                         del kwargs['before_job']
                     _fn = await _sanitize_args(fn, *args, **kwargs)
                 except Exception as e:
@@ -197,4 +197,3 @@ class Cron:
             await asyncio.sleep(60 - (time.time() % 60))
         asyncio.ensure_future(self.run_jobs(files, path))
         asyncio.ensure_future(self._run_jobs_continuously(files, path))
-
