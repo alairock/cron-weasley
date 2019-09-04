@@ -1,3 +1,22 @@
+# ABANDONED!
+This project is still around and should still work for you, but I am no longer going to be maintaining it. 
+
+Cron Weasley has lead me on an adventure in scheduling, and while it was useful, it lacked certain features. 
+ - No GUI
+ - No subsequent step handling
+ - Poorly executed crontab parser (my own doing)
+ - Manual job triggers
+ - Probably other things
+
+But Cron Weasley wasn't useless as it is, it was just simple. So rather than updating, I created [Airduct](https://github.com/alairock/airduct), leaving this legacy in tact.
+
+Things Cron Weasley had going for it.
+ - Simple
+ - Simple
+ - Really good name
+ - Really good alternate name
+ 
+ 
 # Cron Weasley
 Cronjobs for Wizards
 
