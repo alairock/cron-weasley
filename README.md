@@ -5,7 +5,7 @@ Cron Weasley has lead me on an adventure in scheduling, and while it was useful,
  - No GUI
  - No subsequent step handling
  - Poorly executed crontab parser (my own doing)
- - Manual job triggers
+ - No Manual job triggers
  - Probably other things
 
 But Cron Weasley wasn't useless as it is, it was just simple. So rather than updating, I created [Airduct](https://github.com/alairock/airduct), leaving this legacy in tact.
